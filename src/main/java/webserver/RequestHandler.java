@@ -81,6 +81,20 @@ public class RequestHandler implements Runnable{
                 return;
             }
 
+            // 요구사항 5
+            if (url.equals("/user/login")) {
+                String requestBody = readData(br, requestContentLength);
+                Map<String, String> queryParameter = parseQueryParameter(requestBody);
+                User user = repository.findUserById(queryParameter.get("userId"));
+
+                if (user != null && user.getPassword().equals(queryParameter.get("password"))) {
+                    response302HeaderWithCookie(dos, "/index.html");
+                    return;
+                }
+                response302Header(dos, "/user/login_failed.html");
+            }
+
+
             response200Header(dos, body.length);
             responseBody(dos, body);
 
@@ -113,6 +127,17 @@ public class RequestHandler implements Runnable{
         try {
             dos.writeBytes("HTTP/1.1 302 Redirect \r\n");
             dos.writeBytes("Location: " + url + "\r\n");
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.log(Level.SEVERE, e.getMessage());
+        }
+    }
+
+    private void response302HeaderWithCookie(DataOutputStream dos, String url) {
+        try {
+            dos.writeBytes("HTTP/1.1 302 Redirect \r\n");
+            dos.writeBytes("Location: " + url + "\r\n");
+            dos.writeBytes("Set-Cookie: logined=true \r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.log(Level.SEVERE, e.getMessage());
