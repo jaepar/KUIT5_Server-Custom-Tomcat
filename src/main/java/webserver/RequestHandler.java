@@ -2,6 +2,8 @@ package webserver;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,7 +22,21 @@ public class RequestHandler implements Runnable{
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             DataOutputStream dos = new DataOutputStream(out);
 
-            byte[] body = "Hello World".getBytes();
+            String startLine = br.readLine();
+            String[] startLineParts = startLine.split(" ");
+            String method = startLineParts[0];
+            String url = startLineParts[1];
+
+            byte[] body = new byte[0];
+
+            if (url.equals("/") || url.equals("/index.html")) {
+                body = Files.readAllBytes(Paths.get("./webapp/index.html"));
+            }
+
+            if (method.equals("GET") && url.endsWith(".html")) {
+                body = Files.readAllBytes(Paths.get("./webapp" + url));
+            }
+
             response200Header(dos, body.length);
             responseBody(dos, body);
 
