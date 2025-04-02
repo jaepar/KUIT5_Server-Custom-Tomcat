@@ -40,6 +40,7 @@ public class RequestHandler implements Runnable{
             byte[] body = new byte[0];
 
             int requestContentLength = 0;
+            String cookie = "";
 
             while (true) {
                 final String line = br.readLine();
@@ -49,6 +50,9 @@ public class RequestHandler implements Runnable{
                 // header info
                 if (line.startsWith("Content-Length")) {
                     requestContentLength = Integer.parseInt(line.split(": ")[1]);
+                }
+                if (line.startsWith("Cookie")) {
+                    cookie = line.split(": ")[1];
                 }
             }
 
@@ -92,6 +96,14 @@ public class RequestHandler implements Runnable{
                     return;
                 }
                 response302Header(dos, "/user/login_failed.html");
+            }
+
+            if (url.equals("/user/userList")) {
+                if (!cookie.equals("logined=true")) {
+                    response302Header(dos, "/user/login.html");
+                    return;
+                }
+                body = Files.readAllBytes(Paths.get("./webapp" + "/user/list.html"));
             }
 
 
