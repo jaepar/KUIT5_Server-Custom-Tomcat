@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static http.util.HttpRequestUtils.parseQueryParameter;
+import static http.util.IOUtils.readData;
 
 public class RequestHandler implements Runnable{
     Socket connection;
@@ -38,6 +39,18 @@ public class RequestHandler implements Runnable{
 
             byte[] body = new byte[0];
 
+            int requestContentLength = 0;
+
+            while (true) {
+                final String line = br.readLine();
+                if (line.equals("")) {
+                    break;
+                }
+                // header info
+                if (line.startsWith("Content-Length")) {
+                    requestContentLength = Integer.parseInt(line.split(": ")[1]);
+                }
+            }
 
             // 요구사항 1
             if (url.equals("/") || url.equals("/index.html")) {
@@ -52,6 +65,16 @@ public class RequestHandler implements Runnable{
             if (url.contains("/user/signup") && method.equals("GET")) {
                 String queryString = url.substring(url.indexOf("?") + 1);
                 Map<String, String> queryParameter = parseQueryParameter(queryString);
+                User user = new User(queryParameter.get("userId"), queryParameter.get("password"), queryParameter.get("name"), queryParameter.get("email"));
+                repository.addUser(user);
+                response302Header(dos, "/index.html");
+                return;
+            }
+
+            // 요구사항 3
+            if (url.equals("/user/signup") && method.equals("POST")) {
+                String requestBody = readData(br, requestContentLength);
+                Map<String, String> queryParameter = parseQueryParameter(requestBody);
                 User user = new User(queryParameter.get("userId"), queryParameter.get("password"), queryParameter.get("name"), queryParameter.get("email"));
                 repository.addUser(user);
                 response302Header(dos, "/index.html");
