@@ -57,7 +57,7 @@ public class RequestHandler implements Runnable{
             }
 
             // 요구사항 1
-            if (url.equals("/") || url.equals("/index.html")) {
+            if (url.equals("/")) {
                 body = Files.readAllBytes(Paths.get("./webapp/index.html"));
             }
 
@@ -98,6 +98,7 @@ public class RequestHandler implements Runnable{
                 response302Header(dos, "/user/login_failed.html");
             }
 
+            // 요구사항 6
             if (url.equals("/user/userList")) {
                 if (!cookie.equals("logined=true")) {
                     response302Header(dos, "/user/login.html");
@@ -106,6 +107,13 @@ public class RequestHandler implements Runnable{
                 body = Files.readAllBytes(Paths.get("./webapp" + "/user/list.html"));
             }
 
+            // 요구사항 7
+            if (url.endsWith(".css")) {
+                body = Files.readAllBytes(Paths.get("./webapp" + url));
+                response200HeaderWithCss(dos, body.length);
+                responseBody(dos, body);
+                return;
+            }
 
             response200Header(dos, body.length);
             responseBody(dos, body);
@@ -119,6 +127,17 @@ public class RequestHandler implements Runnable{
         try {
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
             dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
+            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.log(Level.SEVERE, e.getMessage());
+        }
+    }
+
+    private void response200HeaderWithCss(DataOutputStream dos, int lengthOfBodyContent) {
+        try {
+            dos.writeBytes("HTTP/1.1 200 OK \r\n");
+            dos.writeBytes("Content-Type: text/css;charset=utf-8\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
