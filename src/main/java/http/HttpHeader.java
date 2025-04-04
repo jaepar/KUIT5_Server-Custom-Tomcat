@@ -1,21 +1,18 @@
-package http.request;
+package http;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static constant.HttpHeader.CONTENT_LENGTH;
-import static constant.HttpHeader.COOKIE;
-
-public class RequestHeader {
+public class HttpHeader {
     private final Map<String, String> headerMap;
 
-    private RequestHeader(Map<String, String> headerMap) {
+    public HttpHeader(Map<String, String> headerMap) {
         this.headerMap = headerMap;
     }
 
-    public static RequestHeader from(BufferedReader br) throws IOException {
+    public static HttpHeader from(BufferedReader br) throws IOException {
         Map<String, String> headerMap = new HashMap<>();
 
         while (true) {
@@ -28,10 +25,15 @@ public class RequestHeader {
 
             headerMap.put(key, value);
         }
-        return new RequestHeader(headerMap);
+        return new HttpHeader(headerMap);
     }
 
     public Map<String, String> getHeaderMap() {
         return headerMap;
     }
+
+    public void putHeader(String key, String value) {
+        headerMap.put(key, value);
+    }
+
 }

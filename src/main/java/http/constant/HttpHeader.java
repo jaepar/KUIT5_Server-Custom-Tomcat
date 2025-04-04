@@ -1,4 +1,4 @@
-package constant;
+package http.constant;
 
 public enum HttpHeader {
     CONTENT_TYPE("Content-Type"),

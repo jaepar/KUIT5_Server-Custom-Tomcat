@@ -3,21 +3,19 @@ package webserver;
 import db.MemoryUserRepository;
 import db.Repository;
 import http.request.HttpRequest;
+import http.response.HttpResponse;
 import model.User;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static constant.HttpHeader.*;
-import static constant.HttpMethod.*;
-import static constant.QueryKey.*;
-import static constant.StatusCode.*;
-import static constant.Url.*;
+import static http.constant.HttpHeader.*;
+import static http.constant.HttpMethod.*;
+import static model.constant.UserQueryKey.*;
+import static http.constant.Url.*;
 import static http.util.HttpRequestUtils.parseQueryParameter;
 
 public class RequestHandler implements Runnable{
@@ -38,15 +36,15 @@ public class RequestHandler implements Runnable{
             DataOutputStream dos = new DataOutputStream(out);
 
             HttpRequest httpRequest = HttpRequest.from(br);
-            byte[] body = new byte[0];
+            HttpResponse httpResponse = HttpResponse.from(dos);
 
             // 요구사항 1
             if (httpRequest.getUrl().equals(ROOT.getValue())) {
-                body = Files.readAllBytes(Paths.get(WEBAPP.getValue() + INDEX_HTML.getValue()));
+                httpResponse.forward(INDEX_HTML.getValue());
             }
 
             if (httpRequest.getMethod().equals(GET.getValue()) && httpRequest.getUrl().endsWith(HTML_EXTENSION.getValue())) {
-                body = Files.readAllBytes(Paths.get(WEBAPP.getValue() + httpRequest.getUrl()));
+                httpResponse.forward(httpRequest.getUrl());
             }
 
             // 요구사항 2
@@ -58,7 +56,8 @@ public class RequestHandler implements Runnable{
                         httpRequest.getQueryValue(EMAIL.getValue()));
 
                 repository.addUser(user);
-                response302Header(dos, INDEX_HTML.getValue());
+
+                httpResponse.redirect(INDEX_HTML.getValue());
                 return;
             }
 
@@ -72,7 +71,8 @@ public class RequestHandler implements Runnable{
                         queryParameter.get(NAME.getValue()),
                         queryParameter.get(EMAIL.getValue()));
                 repository.addUser(user);
-                response302Header(dos, INDEX_HTML.getValue());
+
+                httpResponse.redirect(INDEX_HTML.getValue());
                 return;
             }
 
@@ -83,86 +83,28 @@ public class RequestHandler implements Runnable{
                 User user = repository.findUserById(queryParameter.get(USER_ID.getValue()));
 
                 if (user != null && user.getPassword().equals(queryParameter.get(PASSWORD.getValue()))) {
-                    response302HeaderWithCookie(dos, INDEX_HTML.getValue());
+                    httpResponse.putHeader(SET_COOKIE.getValue(), "logined=true");
+                    httpResponse.redirect(INDEX_HTML.getValue());
                     return;
                 }
-                response302Header(dos, USER_LOGIN_FAILED_HTML.getValue());
+                httpResponse.redirect(USER_LOGIN_FAILED_HTML.getValue());
             }
 
             // 요구사항 6
             if (httpRequest.getUrl().equals(USER_USER_LIST.getValue())) {
                 if (!httpRequest.isLogin()) {
-                    response302Header(dos, USER_LOGIN_HTML.getValue());
+                    httpResponse.redirect(USER_LOGIN_HTML.getValue());
                     return;
                 }
-                body = Files.readAllBytes(Paths.get(WEBAPP.getValue() + USER_LIST_HTML.getValue()));
+                httpResponse.forward(USER_LIST_HTML.getValue());
             }
 
             // 요구사항 7
             if (httpRequest.getUrl().endsWith(CSS_EXTENSION.getValue())) {
-                body = Files.readAllBytes(Paths.get(WEBAPP.getValue() + httpRequest.getUrl()));
-                response200HeaderWithCss(dos, body.length);
-                responseBody(dos, body);
-                return;
+                httpResponse.forward(httpRequest.getUrl());
             }
-
-            response200Header(dos, body.length);
-            responseBody(dos, body);
-
         } catch (IOException e) {
             log.log(Level.SEVERE,e.getMessage());
-        }
-    }
-
-    private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
-        try {
-            dos.writeBytes("HTTP/1.1 " + OK.getValue() + " \r\n");
-            dos.writeBytes( CONTENT_TYPE.getValue() + ": text/html;charset=utf-8\r\n");
-            dos.writeBytes(CONTENT_LENGTH.getValue() + ": " + lengthOfBodyContent + "\r\n");
-            dos.writeBytes("\r\n");
-        } catch (IOException e) {
-            log.log(Level.SEVERE, e.getMessage());
-        }
-    }
-
-    private void response200HeaderWithCss(DataOutputStream dos, int lengthOfBodyContent) {
-        try {
-            dos.writeBytes("HTTP/1.1 "+ OK.getValue() + " \r\n");
-            dos.writeBytes(CONTENT_TYPE +": text/css;charset=utf-8\r\n");
-            dos.writeBytes(CONTENT_LENGTH.getValue() + ": " + lengthOfBodyContent + "\r\n");
-            dos.writeBytes("\r\n");
-        } catch (IOException e) {
-            log.log(Level.SEVERE, e.getMessage());
-        }
-    }
-
-    private void responseBody(DataOutputStream dos, byte[] body) {
-        try {
-            dos.write(body, 0, body.length);
-            dos.flush();
-        } catch (IOException e) {
-            log.log(Level.SEVERE, e.getMessage());
-        }
-    }
-
-    private void response302Header(DataOutputStream dos, String url) {
-        try {
-            dos.writeBytes("HTTP/1.1 " + REDIRECT.getValue() + " \r\n");
-            dos.writeBytes(LOCATION.getValue() + ": " + url + "\r\n");
-            dos.writeBytes("\r\n");
-        } catch (IOException e) {
-            log.log(Level.SEVERE, e.getMessage());
-        }
-    }
-
-    private void response302HeaderWithCookie(DataOutputStream dos, String url) {
-        try {
-            dos.writeBytes("HTTP/1.1 " + REDIRECT.getValue() + " \r\n");
-            dos.writeBytes(LOCATION.getValue() + ": " + url + "\r\n");
-            dos.writeBytes(SET_COOKIE.getValue() + ": " + "logined=true \r\n");
-            dos.writeBytes("\r\n");
-        } catch (IOException e) {
-            log.log(Level.SEVERE, e.getMessage());
         }
     }
 

@@ -1,6 +1,6 @@
-package constant;
+package model.constant;
 
-public enum QueryKey {
+public enum UserQueryKey {
     USER_ID("userId"),
     PASSWORD("password"),
     NAME("name"),
@@ -8,7 +8,7 @@ public enum QueryKey {
 
     private final String value;
 
-    QueryKey(String value) {
+    UserQueryKey(String value) {
         this.value = value;
     }
 

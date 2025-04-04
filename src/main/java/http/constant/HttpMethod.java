@@ -1,12 +1,12 @@
-package constant;
+package http.constant;
 
-public enum StatusCode {
-    OK("200 OK"),
-    REDIRECT("302 Redirect");
+public enum HttpMethod {
+    GET("GET"),
+    POST("POST");
 
     private final String value;
 
-    StatusCode(String value) {
+    HttpMethod(String value) {
         this.value = value;
     }
 

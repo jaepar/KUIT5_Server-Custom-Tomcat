@@ -1,9 +1,11 @@
 package http.request;
 
+import http.HttpHeader;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 
-import static constant.HttpHeader.CONTENT_LENGTH;
+import static http.constant.HttpHeader.CONTENT_LENGTH;
 import static http.util.IOUtils.readData;
 
 public class RequestBody {
@@ -13,7 +15,7 @@ public class RequestBody {
         this.body = body;
     }
 
-    public static RequestBody of(BufferedReader br, RequestHeader requestHeader) throws IOException {
+    public static RequestBody of(BufferedReader br, HttpHeader requestHeader) throws IOException {
         if (requestHeader.getHeaderMap().containsKey(CONTENT_LENGTH.getValue())) {
             int requestContentLength = Integer.parseInt(requestHeader.getHeaderMap().get(CONTENT_LENGTH.getValue()));
             String body = readData(br, requestContentLength);

@@ -1,16 +1,18 @@
 package http.request;
 
+import http.HttpHeader;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 
-import static constant.HttpHeader.COOKIE;
+import static http.constant.HttpHeader.COOKIE;
 
 public class HttpRequest {
     private final RequestStartLine requestStartLine;
-    private final RequestHeader requestHeader;
+    private final HttpHeader requestHeader;
     private final RequestBody requestBody;
 
-    private HttpRequest(RequestStartLine requestStartLine, RequestHeader requestHeader, RequestBody requestBody) {
+    private HttpRequest(RequestStartLine requestStartLine, HttpHeader requestHeader, RequestBody requestBody) {
         this.requestStartLine = requestStartLine;
         this.requestHeader = requestHeader;
         this.requestBody = requestBody;
@@ -18,7 +20,7 @@ public class HttpRequest {
 
     public static HttpRequest from(BufferedReader br) throws IOException {
         RequestStartLine requestStartLine = RequestStartLine.from(br);
-        RequestHeader requestHeader = RequestHeader.from(br);
+        HttpHeader requestHeader = HttpHeader.from(br);
         RequestBody requestBody = RequestBody.of(br, requestHeader);
 
         return new HttpRequest(requestStartLine, requestHeader, requestBody);
