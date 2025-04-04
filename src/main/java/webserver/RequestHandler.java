@@ -35,32 +35,8 @@ public class RequestHandler implements Runnable{
             HttpRequest httpRequest = HttpRequest.from(br);
             HttpResponse httpResponse = HttpResponse.from(dos);
 
-            // 요구사항 1
-            if (httpRequest.getUrl().equals(ROOT.getValue())) {
-                controller = new HomeController();
-            }
-
-            if (httpRequest.getMethod().equals(GET.getValue()) && httpRequest.getUrl().endsWith(HTML_EXTENSION.getValue())
-                    || httpRequest.getUrl().endsWith(CSS_EXTENSION.getValue())) {
-                controller = new ForwardController();
-            }
-
-            // 요구사항 3
-            if (httpRequest.getUrl().equals(USER_SIGNUP.getValue()) && httpRequest.getMethod().equals(POST.getValue())) {
-                controller = new SignUpController(repository);
-            }
-
-            // 요구사항 5
-            if (httpRequest.getUrl().equals(USER_LOGIN.getValue())) {
-                controller = new LoginController(repository);
-            }
-
-            // 요구사항 6
-            if (httpRequest.getUrl().equals(USER_USER_LIST.getValue())) {
-                controller = new ListController();
-            }
-
-            controller.execute(httpRequest, httpResponse);
+            RequestMapper requestMapper = new RequestMapper(httpRequest, httpResponse, repository);
+            requestMapper.proceed();
 
         } catch (IOException e) {
             log.log(Level.SEVERE,e.getMessage());
