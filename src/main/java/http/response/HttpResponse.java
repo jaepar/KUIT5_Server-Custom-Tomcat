@@ -13,6 +13,7 @@ import java.util.Map;
 import static http.constant.HttpHeader.*;
 import static http.constant.StatusCode.OK;
 import static http.constant.StatusCode.REDIRECT;
+import static http.constant.Url.CSS_EXTENSION;
 import static http.constant.Url.WEBAPP;
 
 public class HttpResponse {
@@ -40,7 +41,7 @@ public class HttpResponse {
 
         // header
         String type = "text/html";
-        if (url.contains("css")) {
+        if (url.endsWith(CSS_EXTENSION.getValue())) {
             type = "text/css";
         }
         putHeader(CONTENT_TYPE.getValue(), type + ";charset=utf-8");
