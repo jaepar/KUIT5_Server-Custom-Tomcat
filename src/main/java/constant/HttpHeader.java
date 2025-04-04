@@ -1,11 +1,11 @@
 package constant;
 
 public enum HttpHeader {
-    CONTENT_TYPE("Content-Type: "),
-    CONTENT_LENGTH("Content-Length: "),
-    LOCATION(":Location: "),
-    SET_COOKIE(":Set-Cookie: "),
-    COOKIE("Cookie: ");
+    CONTENT_TYPE("Content-Type"),
+    CONTENT_LENGTH("Content-Length"),
+    LOCATION("Location"),
+    SET_COOKIE("Set-Cookie"),
+    COOKIE("Cookie");
 
     private final String value;
 
